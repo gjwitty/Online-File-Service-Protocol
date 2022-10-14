@@ -40,8 +40,9 @@ public class Server {
     }
     private static void upload(SocketChannel channel, String filename) throws IOException {
         if (!(new File("serverfiles/"+filename).createNewFile()))
-            channel.write(ByteBuffer.wrap("y".getBytes()));
+            channel.write(ByteBuffer.wrap("n".getBytes()));
         else {
+            channel.write(ByteBuffer.wrap("y".getBytes()));
             FileOutputStream stream = new FileOutputStream("serverfiles/"+filename);
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
                 // maximum filesize allowed is 1 MB
