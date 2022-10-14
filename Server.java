@@ -76,8 +76,12 @@ public class Server {
     
     private void rename(String command) {
         String[] splitCommand = command.split("\\?");
-        String old = splitCommand[0];
-        String new = splitCommand[1];
+        File old = new File("serverfiles/"+splitCommand[0]);
+        File new = new File("serverfiles/"+splitCommand[1]);
+        if (old.rename(new))
+            channel.write(ByteBuffer.wrap("y".getBytes()));
+        else
+            channel.write(ByteBuffer.wrap("n".getBytes()));
     }
 
     private void list(SocketChannel channel) {
