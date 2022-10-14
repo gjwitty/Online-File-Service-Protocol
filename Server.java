@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.file.Files;
 
 public class Server {
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         if (args.length != 1) {
             System.out.println("USAGE: Server <port>");
             return;
@@ -20,21 +20,25 @@ public class Server {
             SocketChannel serveChannel = listenChannel.accept();
             ByteBuffer commandBuffer = ByteBuffer.allocate(50);
             serveChannel.read(commandBuffer);
-            buffer.flip();
+            commandBuffer.flip();
             command = commandBuffer.toString();
             while (command.charAt(0) != 'q') {
-                switch (command.charAt(0)) {
-                    case 'u': upload(serveChannel, command.substring(1)); break;
-                    case 'd': download(serveChannel, command.substring(1)); break;
-                    case 'r': remove(serveChannel, command.substring(1)); break;
-                    case 'n': rename(command.substring(1)); break;
-                    case 'l': list(serveChannel); break;
-                    default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
+                try { 
+                    switch (command.charAt(0)) {
+                        case 'u': upload(serveChannel, command.substring(1)); break;
+                        case 'd': download(serveChannel, command.substring(1)); break;
+                        case 'r': remove(serveChannel, command.substring(1)); break;
+                        case 'n': rename(serveChannel, command.substring(1)); break;
+                        case 'l': list(serveChannel); break;
+                        default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
+                    } 
+                } catch (IOException e) { 
+                    serveChannel.write(ByteBuffer.wrap(("ERROR: "+e.getMessage()).getBytes()));
                 }
             } serveChannel.close();
         }
     }
-    private void upload(SocketChannel channel, String filename) {
+    private static void upload(SocketChannel channel, String filename) throws IOException {
         if (!(new File("serverfiles/"+filename).createNewFile()))
             channel.write(ByteBuffer.wrap("y".getBytes()));
         else {
@@ -48,10 +52,11 @@ public class Server {
             catch (IOException e) {
                 channel.write(ByteBuffer.wrap("n".getBytes()));
             } channel.write(ByteBuffer.wrap("y".getBytes()));
+            stream.close();
         }
     }
 
-    private void download(SocketChannel channel, String filename) {
+    private static void download(SocketChannel channel, String filename) throws IOException {
         File file = new File("serverfiles/"+filename);
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
@@ -67,24 +72,24 @@ public class Server {
         }
     }
 
-    private void remove(SocketChannel channel, String filename) {
+    private static void remove(SocketChannel channel, String filename) throws IOException {
         if (new File("serverfiles/"+filename).delete())
             channel.write(ByteBuffer.wrap("y".getBytes()));
         else
             channel.write(ByteBuffer.wrap("n".getBytes()));
     }
     
-    private void rename(String command) {
+    private static void rename(SocketChannel channel, String command) throws IOException {
         String[] splitCommand = command.split("\\?");
-        File old = new File("serverfiles/"+splitCommand[0]);
-        File new = new File("serverfiles/"+splitCommand[1]);
-        if (old.rename(new))
+        File oldName = new File("serverfiles/"+splitCommand[0]);
+        File newName = new File("serverfiles/"+splitCommand[1]);
+        if (oldName.renameTo(newName))
             channel.write(ByteBuffer.wrap("y".getBytes()));
         else
             channel.write(ByteBuffer.wrap("n".getBytes()));
     }
 
-    private void list(SocketChannel channel) {
+    private static void list(SocketChannel channel) throws IOException {
         String[] files = new File("serverfiles").list();
         String filesString = String.join("\t", files);
         channel.write(ByteBuffer.wrap(filesString.getBytes()));
