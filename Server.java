@@ -85,6 +85,8 @@ public class Server {
     }
 
     private void list(SocketChannel channel) {
-        // TODO
+        String[] files = new File("serverfiles").list();
+        String filesString = String.join("\t", files);
+        channel.write(ByteBuffer.wrap(filesString.getBytes()));
     }
 }
