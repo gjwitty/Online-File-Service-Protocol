@@ -19,7 +19,7 @@ public class Server {
         while (true) {
             SocketChannel serveChannel = listenChannel.accept();
             ByteBuffer commandBuffer = ByteBuffer.allocate(50);
-            serveChannel.read(commandBuffer);
+            while(serveChannel.read(commandBuffer) >= 0);
             commandBuffer.flip();
             command = commandBuffer.toString();
             while (command.charAt(0) != 'q') {
