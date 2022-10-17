@@ -21,7 +21,9 @@ public class Server {
             ByteBuffer commandBuffer = ByteBuffer.allocate(50);
             while(serveChannel.read(commandBuffer) >= 0);
             commandBuffer.flip();
-            command = new String(commandBuffer);
+            byte[] asBytes = new byte[commandBuffer.remaining()];
+            commandBuffer.get(asBytes);
+            command = new String(asBytes);
             while (command.charAt(0) != 'q') {
                 try { 
                     switch (command.charAt(0)) {
