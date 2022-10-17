@@ -48,7 +48,7 @@ public class Server {
             FileOutputStream stream = new FileOutputStream("serverfiles/"+filename);
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
                 // maximum filesize allowed is 1 MB
-            channel.read(buffer);
+            while(channel.read(buffer)>=0);
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             try { stream.write(bytes); }
@@ -65,12 +65,12 @@ public class Server {
         ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
         channel.write(buffer);
         buffer.clear();
-        channel.read(buffer);
+        while(channel.read(buffer)>=0);
         buffer.flip();
         while ((char) buffer.get() != 'y') {
             buffer.clear();
             channel.write(ByteBuffer.wrap(fileBytes));
-            channel.read(buffer);
+            while(channel.read(buffer)>=0);
             buffer.flip();
         }
     }
