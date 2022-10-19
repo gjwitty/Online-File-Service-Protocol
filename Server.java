@@ -37,7 +37,7 @@ public class Server {
                 } catch (IOException e) { 
                     serveChannel.write(ByteBuffer.wrap(("ERROR: "+e.getMessage()).getBytes()));
                 }
-            } serveChannel.close();
+            } serveChannel.shutdownOutput();
         }
     }
     private static void upload(SocketChannel channel, String filename) throws IOException {
