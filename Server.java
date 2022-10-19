@@ -16,6 +16,8 @@ public class Server {
         ServerSocketChannel listenChannel = ServerSocketChannel.open();
         listenChannel.bind(new InetSocketAddress(Integer.parseInt(args[0])));
         String command;
+        File serverfiles = new File("serverfiles");
+        if (!serverfiles.isDirectory()) serverfiles.mkdirs("serverfiles");
         while (true) {
             SocketChannel serveChannel = listenChannel.accept();
             ByteBuffer commandBuffer = ByteBuffer.allocate(129);
@@ -40,7 +42,7 @@ public class Server {
             } serveChannel.close();
         }
     }
-    private static void upload(SocketChannel channel, String filename) throws IOException {
+    private static void upload(SocketChannel channel, String filename) {
         if (!(new File("serverfiles/"+filename).createNewFile()))
             channel.write(ByteBuffer.wrap("n".getBytes()));
         else {
@@ -54,7 +56,7 @@ public class Server {
                 buffer.get(bytes);
                 try { stream.write(bytes); }
                 catch (IOException e) {
-                    channel.write(ByteBuffer.wrap("n".getBytes()));
+                    channel.write(ByteBuffer.wrap("n".getBytes())); stream.close();
                 } buffer.clear();
             }
 
