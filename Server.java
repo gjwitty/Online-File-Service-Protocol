@@ -13,10 +13,10 @@ public class Server {
             System.out.println("USAGE: Server <port>");
             return;
         }
+        File serverfiles = new File("serverfiles");
         ServerSocketChannel listenChannel = ServerSocketChannel.open();
         listenChannel.bind(new InetSocketAddress(Integer.parseInt(args[0])));
         String command;
-        File serverfiles = new File("serverfiles");
         if (!serverfiles.isDirectory()) serverfiles.mkdirs("serverfiles");
         while (true) {
             SocketChannel serveChannel = listenChannel.accept();
