@@ -18,7 +18,7 @@ public class Server {
         String command;
         while (true) {
             SocketChannel serveChannel = listenChannel.accept();
-            ByteBuffer commandBuffer = ByteBuffer.allocate(50);
+            ByteBuffer commandBuffer = ByteBuffer.allocate(129);
             while(serveChannel.read(commandBuffer) >= 0);
             commandBuffer.flip();
             byte[] asBytes = new byte[commandBuffer.remaining()];
@@ -37,7 +37,7 @@ public class Server {
                 } catch (IOException e) { 
                     serveChannel.write(ByteBuffer.wrap(("ERROR: "+e.getMessage()).getBytes()));
                 }
-            } serveChannel.shutdownOutput();
+            } serveChannel.close();
         }
     }
     private static void upload(SocketChannel channel, String filename) throws IOException {
@@ -47,14 +47,18 @@ public class Server {
             channel.write(ByteBuffer.wrap("y".getBytes()));
             FileOutputStream stream = new FileOutputStream("serverfiles/"+filename);
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
-                // maximum filesize allowed is 1 MB
-            while(channel.read(buffer)>=0);
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            try { stream.write(bytes); }
-            catch (IOException e) {
-                channel.write(ByteBuffer.wrap("n".getBytes()));
-            } channel.write(ByteBuffer.wrap("y".getBytes()));
+
+            while((bytesRead = channel.read(buffer)) != -1) {
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.flip();
+                buffer.get(bytes);
+                try { stream.write(bytes); }
+                catch (IOException e) {
+                    channel.write(ByteBuffer.wrap("n".getBytes()));
+                } buffer.clear();
+            }
+
+            channel.write(ByteBuffer.wrap("y".getBytes()));
             stream.close();
         }
     }
