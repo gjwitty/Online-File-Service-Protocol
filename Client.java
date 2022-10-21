@@ -57,25 +57,32 @@ public class Client {
     }
 
     private static void remove(SocketChannel channel, String fileName) throws IOException{
-        if (new File(fileName).delete()){
-            channel.write(ByteBuffer.wrap("y".getBytes()));
+        channel.write(ByteBuffer.wrap(("r"+fileName).getBytes()));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        channel.read(byteBuffer);
+        if ((char) byteBuffer.get() == 'y'){
+            System.out.println("File removed");
         } else {
-            channel.write(ByteBuffer.wrap("n".getBytes()));
+            System.out.println("Error");
         }
     }
 
     private static void rename(SocketChannel channel, String command) throws IOException{
-        String[] splitCommand = command.split("\\?");
-        File oldName = new File("serverfiles/"+splitCommand[0]);
-        File newName = new File("serverfiles/"+splitCommand[1]);
-        if (oldName.renameTo(newName)){
-            channel.write(ByteBuffer.wrap("y".getBytes()));
+        channel.write(ByteBuffer.wrap(("n"+command).getBytes()));
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        if ((char) byteBuffer.get() == 'y'){
+            System.out.println("Files renamed");
         } else {
-            channel.write(ByteBuffer.wrap("n".getBytes()));
+            System.out.println("Error");
         }
     }
 
-    private static void senReplyCode(SocketChannel channel, char code) throws IOException {
+    private static void list(SocketChannel channel) throws IOException {
+        channel.write(ByteBuffer.wrap(("l").getBytes()));
+
+    }
+
+    private static void sendReplyCode(SocketChannel channel, char code) throws IOException {
         byte[] a = new byte[1];
         a[0] = (byte)code;
         ByteBuffer data = ByteBuffer.wrap(a);
