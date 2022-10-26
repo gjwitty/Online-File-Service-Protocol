@@ -88,22 +88,6 @@ public class Client {
         return serverReplyCode;
     }
 
-    private static void upload(SocketChannel channel, String fileName) throws IOException {
-        File file = new File(fileName);
-        byte[] fileBytes = Files.readAllBytes(file.toPath());
-        ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
-        channel.write(buffer);
-        buffer.clear();
-        channel.read(buffer);
-        buffer.flip();
-        while ((char) buffer.get() != 'y'){
-            buffer.clear();
-            channel.write(ByteBuffer.wrap(fileBytes));
-            channel.read(buffer);
-            buffer.flip();
-        }
-    }
-
     private static void download(SocketChannel channel, String fileName) throws IOException{
         if (!(new File(fileName).createNewFile())){
             channel.write(ByteBuffer.wrap("y".getBytes()));
