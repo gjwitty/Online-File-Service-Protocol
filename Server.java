@@ -44,6 +44,7 @@ public class Server {
 
     private static void download(SocketChannel channel, String filename) throws IOException {
         File file = new File("serverfiles/"+filename);
+        if (!file.exists()) channel.write(ByteBuffer.wrap("n".getBytes()));
         byte[] fileBytes = Files.readAllBytes(file.toPath());
         ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
         channel.write(buffer);
