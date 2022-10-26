@@ -14,7 +14,7 @@ public class Server {
             return;
         }
         File serverfiles = new File("serverfiles");
-        if (!serverfiles.isDirectory()) serverfiles.mkdirs("serverfiles");
+        if (!serverfiles.isDirectory()) serverfiles.mkdirs();
         ServerSocketChannel listenChannel = ServerSocketChannel.open();
         listenChannel.bind(new InetSocketAddress(Integer.parseInt(args[0])));
         String command;
