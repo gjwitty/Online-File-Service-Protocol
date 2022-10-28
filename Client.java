@@ -87,6 +87,8 @@ public class Client {
         channel.write(ByteBuffer.wrap(("n"+command).getBytes()));
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
         channel.shutdownOutput();
+        channel.read(byteBuffer);
+        byteBuffer.flip();
         if ((char) byteBuffer.get() == 'y'){
             System.out.println("File "+command.split("\\?")[0]+" renamed to "+command.split("\\?")[1]);
         } else {
