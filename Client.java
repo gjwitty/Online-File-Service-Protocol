@@ -30,12 +30,16 @@ public class Client {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter d, r, n, l");
         command = scanner.nextLine();
-        String fileName = command.substring(1);
+        System.out.println("Enter the File Name");
+        String fileName = scanner.nextLine();
         try {
             switch (command.charAt(0)) {
                 case 'd': download(clientChannel, fileName); break;
                 case 'r': remove(clientChannel, fileName); break;
-                case 'n': rename(clientChannel, fileName); break;
+                case 'n':
+                    System.out.println("Enter a new File Name:");
+                    fileName += "?" + scanner.nextLine();
+                    rename(clientChannel, fileName); break;
                 case 'l': list(clientChannel); break;
                 default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
             }
