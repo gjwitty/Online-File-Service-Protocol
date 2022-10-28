@@ -111,7 +111,9 @@ public class Client {
         channel.write(ByteBuffer.wrap(("l").getBytes()));
         channel.shutdownOutput();
         channel.read(byteBuffer);
-        System.out.println(byteBuffer);
+        byte[] asBytes = new byte[byteBuffer.remaining()];
+        byteBuffer.get(asBytes);
+        System.out.println(new String(asBytes));
     }
 
     private static void sendReplyCode(SocketChannel channel, char code) throws IOException {
