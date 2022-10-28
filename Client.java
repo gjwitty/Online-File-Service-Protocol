@@ -110,9 +110,8 @@ public class Client {
         ByteBuffer byteBuffer = ByteBuffer.allocate(10000);
         channel.write(ByteBuffer.wrap(("l").getBytes()));
         channel.shutdownOutput();
-        while (channel.read(byteBuffer) >= 0){
-            channel.read(byteBuffer);
-        }
+        while (channel.read(byteBuffer) >= 0);
+        byteBuffer.flip();
         byte[] asBytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(asBytes);
         System.out.println(new String(asBytes));
