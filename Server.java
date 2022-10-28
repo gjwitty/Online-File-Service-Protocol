@@ -54,7 +54,6 @@ public class Server {
             fileContent.append(in.readLine());
         }
         ByteBuffer buffer = ByteBuffer.wrap(fileContent.toString().getBytes());
-        buffer.flip();
         channel.write(buffer);
         in.close();
     }
