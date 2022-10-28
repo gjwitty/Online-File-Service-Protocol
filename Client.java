@@ -58,13 +58,15 @@ public class Client {
         if (!(new File(fileName).createNewFile())){
             System.out.println("Error");
         } else {
-            FileOutputStream stream = new FileOutputStream(fileName);
+            BufferedWriter stream = new BufferedWriter(new FileWriter(new File(fileName)));
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
-            channel.read(buffer);
-            buffer.flip();
-            byte[] bytes = new byte[buffer.remaining()];
-            buffer.get(bytes);
-            stream.write(bytes);
+            while (channel.read(buffer) >= 0) {
+                buffer.flip();
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+                stream.write(new String(bytes));
+                buffer.clear();
+            }
             stream.close();
             System.out.println("File "+fileName+" downloaded!");
         }
