@@ -26,7 +26,7 @@ public class Client {
         SocketChannel clientChannel;
         // calling SocketChannel.open with a parameter calls connect() automatically!
         clientChannel = SocketChannel.open(new InetSocketAddress(serverIP, serverPort));
-        String command = new String();
+        String command;
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter d, r, n, l");
         command = scanner.nextLine();
@@ -52,25 +52,6 @@ public class Client {
         clientChannel.close();
     }
 
-    private static char getServerCode(SocketChannel channel) throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        int bytesToRead = 1;
-
-        //make sure we read the entire server reply
-        while ((bytesToRead -= channel.read(buffer)) > 0) ;
-
-        //before reading from buffer, flip buffer
-        buffer.flip();
-        byte[] a = new byte[1];
-        //copy bytes from buffer to array
-        buffer.get(a);
-        char serverReplyCode = new String(a).charAt(0);
-
-        //System.out.println(serverReplyCode);
-
-        return serverReplyCode;
-    }
-
     private static void download(SocketChannel channel, String fileName) throws IOException{
         channel.write(ByteBuffer.wrap(("d"+fileName).getBytes()));
         channel.shutdownOutput();
@@ -80,18 +61,21 @@ public class Client {
             FileOutputStream stream = new FileOutputStream(fileName);
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
             channel.read(buffer);
+            buffer.flip();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             stream.write(bytes);
             stream.close();
+            System.out.println("File "+fileName+" downloaded!");
         }
     }
 
     private static void remove(SocketChannel channel, String fileName) throws IOException{
         channel.write(ByteBuffer.wrap(("r"+fileName).getBytes()));
+        channel.shutdownOutput();
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
         channel.read(byteBuffer);
-        channel.shutdownOutput();
+        byteBuffer.flip();
         if ((char) byteBuffer.get() == 'y'){
             System.out.println("File removed");
         } else {
@@ -104,7 +88,7 @@ public class Client {
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
         channel.shutdownOutput();
         if ((char) byteBuffer.get() == 'y'){
-            System.out.println("Files renamed");
+            System.out.println("File "+command.split("\\?")[0]+" renamed to "+command.split("\\?")[1]);
         } else {
             System.out.println("Error");
         }
@@ -119,12 +103,5 @@ public class Client {
         byte[] asBytes = new byte[byteBuffer.remaining()];
         byteBuffer.get(asBytes);
         System.out.println(new String(asBytes));
-    }
-
-    private static void sendReplyCode(SocketChannel channel, char code) throws IOException {
-        byte[] a = new byte[1];
-        a[0] = (byte)code;
-        ByteBuffer data = ByteBuffer.wrap(a);
-        channel.write(data);
     }
 }
