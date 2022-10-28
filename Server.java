@@ -1,5 +1,7 @@
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -46,9 +48,15 @@ public class Server {
     private static void download(SocketChannel channel, String filename) throws IOException {
         File file = new File("serverfiles/"+filename);
         if (!file.exists()) channel.write(ByteBuffer.wrap("n".getBytes()));
-        byte[] fileBytes = Files.readAllBytes(file.toPath());
-        ByteBuffer buffer = ByteBuffer.wrap(fileBytes);
+        BufferedReader in = new BufferedReader(new FileReader(file));
+        StringBuilder fileContent = new StringBuilder();
+        while (in.ready()) {
+            fileContent.append(in.readLine());
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(fileContent.toString().getBytes());
+        buffer.flip();
         channel.write(buffer);
+        in.close();
     }
 
     private static void remove(SocketChannel channel, String filename) throws IOException {
