@@ -30,8 +30,11 @@ public class Client {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Enter d, r, n, l");
         command = scanner.nextLine();
-        System.out.println("Enter the File Name");
-        String fileName = scanner.nextLine();
+        String fileName = "";
+        if (!command.equals("l")){
+            System.out.println("Enter the File Name");
+            fileName = scanner.nextLine();
+        }
         try {
             switch (command.charAt(0)) {
                 case 'd': download(clientChannel, fileName); break;
@@ -79,10 +82,7 @@ public class Client {
             channel.read(buffer);
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
-            try{ stream.write(bytes);}
-            catch (IOException e){
-                channel.write(ByteBuffer.wrap("n".getBytes()));
-            } channel.write(ByteBuffer.wrap("y".getBytes()));
+            stream.write(bytes);
             stream.close();
         }
     }
