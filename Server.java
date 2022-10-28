@@ -26,7 +26,8 @@ public class Server {
             commandBuffer.flip();
             byte[] asBytes = new byte[commandBuffer.remaining()];
             commandBuffer.get(asBytes);
-            command = new String(asBytes);try {
+            command = new String(asBytes);
+            try {
                 switch (command.charAt(0)) {
                     case 'd': download(serveChannel, command.substring(1)); break;
                     case 'r': remove(serveChannel, command.substring(1)); break;
