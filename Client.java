@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -12,61 +13,36 @@ import java.util.Scanner;
 public class Client {
     public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException, InterruptedException {
         if (args.length != 2) {
-            System.out.println("Usage: java Client <server_IP> <server_port>");
+            System.out.println("USAGE: ClientTCP <IP> <port>");
+            return;
+        } InetAddress serverIP;
+        try {
+            serverIP = InetAddress.getByName(args[0]);
+        } catch (UnknownHostException e) {
+            System.err.println("Unknown Host: "+args[0]);
             return;
         }
         int serverPort = Integer.parseInt(args[1]);
-        String serverIP = args[0];
-
-        char command;
-
-        do {
-            Scanner keyboard = new Scanner(System.in);
-            System.out.println("Enter a command (D, G, L, R):");
-            //Commands are NOT case-sensitive.
-            command = keyboard.nextLine().toUpperCase().charAt(0);
-
-            switch (command) {
-                case 'G':
-                    System.out.println("Enter the name of the file to download: ");
-                    String fileName = keyboard.nextLine();
-                    ByteBuffer buffer = ByteBuffer.wrap(("G" + fileName).getBytes());
-                    SocketChannel channel = SocketChannel.open();
-                    channel.connect(new InetSocketAddress(serverIP, serverPort));
-                    channel.write(buffer);
-                    //It's critical to shut down output on client side
-                    //when client is done sending to server
-                    channel.shutdownOutput();
-                    //receive server reply code
-                    if (getServerCode(channel) != 'S') {
-                        System.out.println("Server failed to serve the request.");
-                    } else {
-                        System.out.println("The request was accepted");
-                        Files.createDirectories(Paths.get("./downloaded"));
-                        //make sure to set the "append" flag to true
-                        BufferedWriter bw = new BufferedWriter(new FileWriter("./downloaded/" + fileName, true));
-                        ByteBuffer data = ByteBuffer.allocate(1024);
-                        int bytesRead;
-
-                        while ((bytesRead = channel.read(data)) != -1) {
-                            //before reading from buffer, flip buffer
-                            //("limit" set to current position, "position" set to zero)
-                            data.flip();
-                            byte[] a = new byte[bytesRead];
-                            //copy bytes from buffer to array
-                            //(all bytes between "position" and "limit" are copied)
-                            data.get(a);
-                            String serverMessage = new String(a);
-                            bw.write(serverMessage);
-                            data.clear();
-                        }
-                        bw.close();
-                    }
-                    channel.close();
-                    break;
+        SocketChannel clientChannel;
+        // calling SocketChannel.open with a parameter calls connect() automatically!
+        clientChannel = SocketChannel.open(new InetSocketAddress(serverIP, serverPort));
+        String command = new String();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Enter d, r, n, l");
+        command = scanner.nextLine();
+        String fileName = command.substring(1);
+        try {
+            switch (command.charAt(0)) {
+                case 'd': download(clientChannel, fileName); break;
+                case 'r': remove(clientChannel, fileName); break;
+                case 'n': rename(clientChannel, fileName); break;
+                case 'l': list(clientChannel); break;
+                default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
             }
-        } while (command != 'Q');
-
+        } catch (IOException e) {
+            System.err.println("ERROR: "+e.getMessage());
+        }
+        clientChannel.close();
     }
 
     private static char getServerCode(SocketChannel channel) throws IOException {
@@ -89,8 +65,10 @@ public class Client {
     }
 
     private static void download(SocketChannel channel, String fileName) throws IOException{
+        channel.write(ByteBuffer.wrap(("d"+fileName).getBytes()));
+        channel.shutdownOutput();
         if (!(new File(fileName).createNewFile())){
-            channel.write(ByteBuffer.wrap("y".getBytes()));
+            System.out.println("Error");
         } else {
             FileOutputStream stream = new FileOutputStream(fileName);
             ByteBuffer buffer = ByteBuffer.allocate(1000000);
@@ -109,6 +87,7 @@ public class Client {
         channel.write(ByteBuffer.wrap(("r"+fileName).getBytes()));
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
         channel.read(byteBuffer);
+        channel.shutdownOutput();
         if ((char) byteBuffer.get() == 'y'){
             System.out.println("File removed");
         } else {
@@ -119,6 +98,7 @@ public class Client {
     private static void rename(SocketChannel channel, String command) throws IOException{
         channel.write(ByteBuffer.wrap(("n"+command).getBytes()));
         ByteBuffer byteBuffer = ByteBuffer.allocate(1);
+        channel.shutdownOutput();
         if ((char) byteBuffer.get() == 'y'){
             System.out.println("Files renamed");
         } else {
@@ -127,8 +107,11 @@ public class Client {
     }
 
     private static void list(SocketChannel channel) throws IOException {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(10000);
         channel.write(ByteBuffer.wrap(("l").getBytes()));
-
+        channel.shutdownOutput();
+        channel.read(byteBuffer);
+        System.out.println(byteBuffer);
     }
 
     private static void sendReplyCode(SocketChannel channel, char code) throws IOException {

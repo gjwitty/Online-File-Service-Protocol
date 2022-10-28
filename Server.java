@@ -26,18 +26,18 @@ public class Server {
             commandBuffer.flip();
             byte[] asBytes = new byte[commandBuffer.remaining()];
             commandBuffer.get(asBytes);
-            command = new String(asBytes);
-                try { 
-                    switch (command.charAt(0)) {
-                        case 'd': download(serveChannel, command.substring(1)); break;
-                        case 'r': remove(serveChannel, command.substring(1)); break;
-                        case 'n': rename(serveChannel, command.substring(1)); break;
-                        case 'l': list(serveChannel); break;
-                        default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
-                    } 
-                } catch (IOException e) { 
-                    System.err.println("ERROR: "+e.getMessage());
+            command = new String(asBytes);try {
+                switch (command.charAt(0)) {
+                    case 'd': download(serveChannel, command.substring(1)); break;
+                    case 'r': remove(serveChannel, command.substring(1)); break;
+                    case 'n': rename(serveChannel, command.substring(1)); break;
+                    case 'l': list(serveChannel); break;
+                    default: throw new IllegalArgumentException("ERROR: Operation "+command.charAt(0)+" not supported");
                 }
+            } catch (IOException e) {
+                System.err.println("ERROR: "+e.getMessage());
+            }
+
             serveChannel.close();
         }
     }
