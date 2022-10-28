@@ -51,7 +51,7 @@ public class Server {
         BufferedReader in = new BufferedReader(new FileReader(file));
         StringBuilder fileContent = new StringBuilder();
         while (in.ready()) {
-            fileContent.append(in.readLine());
+            fileContent.append(in.readLine()+"\n");
         }
         ByteBuffer buffer = ByteBuffer.wrap(fileContent.toString().getBytes());
         channel.write(buffer);
